@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Air Quality</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css">
+    <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css">
+    <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.css">
+    <link rel="stylesheet" href="assets/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.css">
+    <link rel="stylesheet" href="assets/css/app.css">
+
+    <link rel="apple-touch-icon" sizes="76x76" href="assets/img/favicon-76.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="assets/img/favicon-120.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/img/favicon-152.png">
+    <link rel="icon" sizes="196x196" href="assets/img/favicon-196.png">
+    <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+  </head>
+
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse">
+            <span class="sr-only">Toggle navigation</span>
+          </button>
+          <a class="navbar-brand" href="http://disputebills.com"><img src="https://smartsdk.media.martel-innovate.com/wp-content/uploads/sites/8/2016/08/logo_250x170.png" alt="Dispute Bills">
+          </a>
+        </div>
+        <div id="navbar3" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="container">
+     
+      <div id="map">
+
+      </div>
+      <div id="over_map">
+        <label style="width:100%; text-align:center; font-size:110%">Air Quality Parameters</label></br>
+        <table id="measures-table">
+        </table>
+      </div>
+
+        <div id="PM10_TD_AQI" class="aqi_table">
+          <label style="width:100%; text-align:center; font-size:110%">Air Quality Index</label></br>
+          <div class="aqi" style="background-color: #009966">[0, 50]</div>
+          <div class="aqi" style="background-color: #ffde33">[50, 100]</div>
+          <div class="aqi" style="background-color: #ff9933">[100, 150]</div>
+          <div class="aqi" style="background-color: #cc0033">[150, 200]</div>
+          <div class="aqi" style="background-color: #660099">[200, 300]</div>
+          <div class="aqi" style="background-color: #7e0023">[300, 400]</div>
+          <div class="aqi" style="background-color: #7e0023">[400, 500]</div>
+        </div>
+
+        <div id="SO2_TD_AQI" class="aqi_table">
+          <label style="width:100%; text-align:center; font-size:110%">Air Quality Index</label></br>
+          <div class="aqi" style="background-color: #009966">[0, 50]</div>
+          <div class="aqi" style="background-color: #ffde33">[50, 100]</div>
+          <div class="aqi" style="background-color: #ff9933">[100, 150]</div>
+          <div class="aqi" style="background-color: #cc0033">[150, 200]</div>
+        </div>
+
+        <div id="NO2_TD_AQI" class="aqi_table">
+          <label style="width:100%; text-align:center; font-size:110%">Air Quality Index</label></br>
+          <div class="aqi" style="background-color: #009966">[0, 50]</div>
+          <div class="aqi" style="background-color: #ffde33">[50, 100]</div>
+          <div class="aqi" style="background-color: #ff9933">[100, 150]</div>
+          <div class="aqi" style="background-color: #cc0033">[150, 200]</div>
+          <div class="aqi" style="background-color: #660099">[200, 300]</div>
+          <div class="aqi" style="background-color: #7e0023">[300, 400]</div>
+          <div class="aqi" style="background-color: #7e0023">[400, 500]</div>
+        </div>
+
+        <div id="O3_TD_AQI" class="aqi_table">
+          <label style="width:100%; text-align:center; font-size:110%">Air Quality Index</label></br>
+          <div class="aqi" style="background-color: #aaaaaa">[0, 100]</div>
+          <div class="aqi" style="background-color: #ff9933">[100, 150]</div>
+          <div class="aqi" style="background-color: #cc0033">[150, 200]</div>
+          <div class="aqi" style="background-color: #660099">[200, 300]</div>
+          <div class="aqi" style="background-color: #7e0023">[300, 400]</div>
+          <div class="aqi" style="background-color: #7e0023">[400, 500]</div>
+        </div>
+
+        <div id="CO_TD_AQI" class="aqi_table">
+          <label style="width:100%; text-align:center; font-size:110%">Air Quality Index</label></br>
+          <div class="aqi" style="background-color: #009966">[0, 50]</div>
+          <div class="aqi" style="background-color: #ffde33">[50, 100]</div>
+          <div class="aqi" style="background-color: #ff9933">[100, 150]</div>
+          <div class="aqi" style="background-color: #cc0033">[150, 200]</div>
+          <div class="aqi" style="background-color: #660099">[200, 300]</div>
+          <div class="aqi" style="background-color: #7e0023">[300, 400]</div>
+          <div class="aqi" style="background-color: #7e0023">[400, 500]</div>
+        </div>
+  
+    </div>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.5/typeahead.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.1.1/list.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.min.js"></script>
+    <script src="assets/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="https://unpkg.com/mqtt@2.6.2/dist/mqtt.min.js"></script>
+  </body>
+</html>
