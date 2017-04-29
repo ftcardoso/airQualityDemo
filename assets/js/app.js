@@ -361,23 +361,22 @@ function onClickMarker(e) {
 function getAQI(value, pollutant_range, aqi_range){
     var bp_index
 
-	for (var i = 1; i < pollutant_range.length; i ++){
-		if (pollutant_range[i - 1] < value <= pollutant_range[i]){
-			bp_index = i;
-			break;
-		}
-	}
+        for (var i = 1; i < pollutant_range.length; i ++){
+                if (pollutant_range[i - 1] < value && value <= pollutant_range[i]){
+                        bp_index = i;
+                        break;
+                }
+        }
 
-	if (value > pollutant_range[pollutant_range.length-1]){
-		bp_index = pollutant_range.length
-	}
+        if (value > pollutant_range[pollutant_range.length-1]){
+                bp_index = pollutant_range.length
+        }
 
-    i_hi = aqi_range[bp_index]
-    i_low = aqi_range[bp_index-1]
+    var i_hi = aqi_range[bp_index]
+    var i_low = aqi_range[bp_index-1]
 
-    bp_hi = pollutant_range[bp_index]
-    bp_low = pollutant_range[bp_index-1]
-
+    var bp_hi = pollutant_range[bp_index]
+    var bp_low = pollutant_range[bp_index-1]
 
     index = ((i_hi - i_low) / (bp_hi - bp_low)) * (value - bp_low) + i_low
     return Math.round(index);
