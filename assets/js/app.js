@@ -2,6 +2,12 @@ var map;
 
 var markers_measures = {};
 
+if (document.body.clientWidth <= 767) {
+  var isCollapsed = true;
+} else {
+  var isCollapsed = false;
+}
+
 var measurand_parameters = ['Carbon Monoxide', 'Nitrogen Monoxide', 'Nitrogen Dioxide', 'Sulfur Dioxide', 'Particle Pollution', 'Relative Humidity', 'Temperature'];
 var measurand_parameters_aux = ['CO', 'O3', 'NO2', 'SO2', 'PM10',  'RH', 'T'];
 var measurand_parameters_unit = ['PPM', 'PPB', 'PPB', 'PPB', 'µ', '%', 'ºC'];
@@ -33,6 +39,7 @@ POLLUTANTS = {	'CO': [CO_RANGE, CO_AQI, CO_COLORS],
 				'SO2':[SO2_RANGE, SO2_AQI, SO2_COLORS],
 				'PM10':[PM10_RANGE, PM10_AQI, PM10_COLORS]
 }
+
 
 var greenIcon = L.icon({
     iconUrl: 'https://raw.githubusercontent.com/ftcardoso/leaflet-color-markers/master/img/marker-icon-2x-green.png',
@@ -74,6 +81,8 @@ var violetIcon = L.icon({
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
+TEMP_MARKERS_RANGE = [0, 50, 100, 150, 200]
+TEMP_MARKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, violetIcon] 
 
 $(window).resize(function () {
 	sizeLayerControl();
@@ -88,11 +97,21 @@ var cartoLight = L.tileLayer('http://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{
 	attribution: '&copy; <a href="http://ubiwhere.com">Ubiwhere</a> &copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 });
 
+var darkMatter = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+	maxZoom: 19,
+	attribution: '&copy; <a href="http://ubiwhere.com">Ubiwhere</a> &copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+});
+
 var osmLayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 	maxZoom: 19,
 	attribution: '&copy; <a href="http://ubiwhere.com">Ubiwhere</a> &copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 });
 
+
+var baseLayers = {
+	'Day Mode': osmLayer,
+	'Night Mode': darkMatter
+}
 
 /* Single marker cluster layer to hold all clusters */
 var markerClusters = new L.MarkerClusterGroup({
@@ -110,10 +129,14 @@ var markerClusters = new L.MarkerClusterGroup({
 map = L.map("map", {
 	zoom: 7,
 	center: [19.429861, -99.134698],
-	layers: [osmLayer, markerClusters, ],
+	layers: [osmLayer, markerClusters, darkMatter],
 	zoomControl: false,
 	attributionControl: false
 });
+
+var layerControl = L.control.groupedLayers(baseLayers, {
+  collapsed: isCollapsed
+}).addTo(map);
 
 var attributionControl = L.control({
 	position: "bottomright"
@@ -217,10 +240,12 @@ function getSubscription(){
 
 function parseData(content) {
 	for (var i = 0; i < content.length; ++i) {
-		console.log(content[i]);
 		var marker_id = content[i].id;
+			var high_AQI_value = 0;
+			var high_AQI_name = '';
+			var marker_color = '';
 
-		var popup = marker_id + '</br>' +
+		var popup = '<b>' + marker_id + '</b></br>' +
 			'<br/><b>Type:</b> ' + content[i].type +
 			'<br/><b>Last Update:</b> ' + content[i].dateObserved +
 			'<br/><b>Address:</b> ' + content[i].address.streetAddress + ', ' + content[i].address.addressLocality + ', ' + content[i].address.addressCountry +
@@ -234,13 +259,34 @@ function parseData(content) {
 			var measure_data = measures[measure].split(', ')
 			measures_values.push(measure_data[1]);
 
+			var get_AQI = getAQI(measure_data[1], POLLUTANTS[measure_data[0]][0], POLLUTANTS[measure_data[0]][1]);
+
+			if (get_AQI >= high_AQI_value){
+				high_AQI_value = get_AQI;
+				high_AQI_name = measure_data[0];
+			}
+	
+			// for (var j = 1; j < POLLUTANTS[high_AQI_name][0].length; j++){
+			// 	if (high_AQI_value >= POLLUTANTS[high_AQI_name][0][j-1] && high_AQI_value < POLLUTANTS[high_AQI_name][0][j]){
+			// 		marker_color = POLLUTANTS[high_AQI_name][2][j];
+			// 	}
+			// }
+
+			for (var j = 1; j < TEMP_MARKERS_RANGE.length; j++){
+				if (high_AQI_value >= TEMP_MARKERS_RANGE[j-1] && high_AQI_value < TEMP_MARKERS_RANGE[j]){
+					marker_color = TEMP_MARKERS_COLORS[j];
+				}
+			}
 		}
+
+		popup += '<b>Higher AQI value: </b>' + high_AQI_name + ' - ' + high_AQI_value;
+
 		measures_values.push(content[i].relativeHumidity);
 		measures_values.push(content[i].temperature);
 		markers_measures[marker_id] = measures_values;
 
-		
-		var m = L.marker([content[i].location.coordinates[0], content[i].location.coordinates[1]], {icon: greenIcon}).bindPopup(popup).on('click', onClickMarker);
+		console.log(high_AQI_value, marker_color);
+		var m = L.marker([content[i].location.coordinates[0], content[i].location.coordinates[1]], {icon: marker_color}).bindPopup(popup).on('click', onClickMarker);
 		m.id = content[i].id;
 
 
@@ -282,6 +328,7 @@ function onClickMarker(e) {
 		cell1.className = "table_cell_aqi1"
 
 
+		// Change to get dynamically the color using the POLLUTANTS dictionary
 		if(measurand_parameters_aux[i] == 'PM10'){
 			for (var j = 1; j < PM10_RANGE.length; j++){
 				if (markers_measures[this.id][i] >= PM10_RANGE[j-1] && markers_measures[this.id][i] < PM10_RANGE[j]){
@@ -339,6 +386,28 @@ function onClickMarker(e) {
 		cell2.className = "table_cell_aqi2"
 	}
 
+	// Append table first row 
+	var row = measures_table.insertRow(0);
+	row.className = "table_row_aqi"
+
+	inner_cell_col1 = "Parameter";
+	inner_cell_col2 = "Value";
+	inner_cell_col3 = "Air Quality Index";
+
+	var cell_col1 = row.insertCell(0);
+	var cell_col2 = row.insertCell(1);
+	var cell_col3 = row.insertCell(2);
+
+	cell_col1.innerHTML = inner_cell_col1;
+	cell_col2.innerHTML = inner_cell_col2;
+	cell_col3.innerHTML = inner_cell_col3;
+
+	cell_col1.className = "table_cell_name1";
+	cell_col2.className = "table_cell_name2";
+	cell_col3.className = "table_cell_name2";
+
+
+	// Add event listenner to table to show AQI info
 	var measures_table = document.getElementById('measures-table');
 	var measures_table_row = measures_table.getElementsByTagName("tr");
 
@@ -359,6 +428,9 @@ function onClickMarker(e) {
 }
 
 function getAQI(value, pollutant_range, aqi_range){
+	if (value == 0){
+		return 0;
+	}
     var bp_index
 
         for (var i = 1; i < pollutant_range.length; i ++){

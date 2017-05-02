@@ -25,12 +25,13 @@ input[type="radio"], input[type="checkbox"] {
   max-width: 100%;
   float: left;
 }
-.aqi{
-  width: 100%;
-  height: 2%;
+td.aqi{
+  width: 10%;
+  height: 3%;
   color: black;
   padding: 2%;
   text-align: center;
+  margin-right: 10%;
 }
 .table_row_aqi{
   width: 100%;
@@ -51,13 +52,27 @@ input[type="radio"], input[type="checkbox"] {
   text-align: right;
   width: auto;
   border-style: solid 5px black;
-
+ }
+  .table_cell_name1{
+  padding: 5px;
+  text-align: left;
+  width: auto;
+  border-style: solid 5px black;
+  font-weight: bold;
+ }
+  .table_cell_name2{
+  padding: 5px;
+  text-align: right;
+  width: auto;
+  border-style: solid 5px black;
+  font-weight: bold;
  }
 .aqi_table{
-  width: 20%;
-  position: absolute; 
-  top: 55%; 
-  right: 3%; 
+  width: auto;
+  height: auto;
+  position: fixed; 
+  bottom: 2%; 
+  left: 2%; 
   z-index: 99; 
   background-color: rgba(255,255,255,0.8);
   color: black;
@@ -66,6 +81,8 @@ input[type="radio"], input[type="checkbox"] {
   min-width: 15%;
   text-align: left;
   display: none;
+  border-collapse:separate;
+  border-spacing:2px 2px;
 
   margin: 1rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
@@ -82,10 +99,9 @@ input[type="radio"], input[type="checkbox"] {
 }
 #over_map { 
   width: auto;
-  max-width: 30%;
   position: absolute; 
-  top: 15%; 
-  right: 3%; 
+  top: 19%; 
+  right: 0%; 
   z-index: 99; 
   background-color: rgba(255,255,255,0.8);
   color: black;
@@ -122,6 +138,8 @@ input[type="radio"], input[type="checkbox"] {
 }
 #measures-table{
   cursor: pointer;
+  border-collapse:separate;
+  border-spacing: 1px 4px;
 }
 #loading {
   position: absolute;
