@@ -35,22 +35,24 @@ td.aqi{
 }
 .table_row_aqi{
   width: 100%;
-  font-size: 90%;
+  font-size: 100%;
 }
  .table_cell_aqi0 {
-  padding: 5px;
-  width: 50%;
+  padding: 7px;
+  width: auto;
  }
  .table_cell_aqi1 {
-  padding: 5px;
+  padding: 7px;
   text-align: right;
-  width: 15%;
+  width: auto;
+  min-width: 20%;
   border-style: solid 5px black;
  }
  .table_cell_aqi2{
-  padding: 5px;
+  padding: 7px;
   text-align: right;
   width: auto;
+  min-width: 20%;
   border-style: solid 5px black;
  }
   .table_cell_name1{
@@ -74,7 +76,7 @@ td.aqi{
   bottom: 2%; 
   left: 2%; 
   z-index: 99; 
-  background-color: rgba(255,255,255,0.8);
+  background-color: rgba(255,255,255,0.9);
   color: black;
   padding: 10px;
   border-radius: 2px;
@@ -100,10 +102,10 @@ td.aqi{
 #over_map { 
   width: auto;
   position: absolute; 
-  top: 19%; 
+  top: 20%; 
   right: 0%; 
   z-index: 99; 
-  background-color: rgba(255,255,255,0.8);
+  background-color: rgba(255,255,255,0.9);
   color: black;
   padding: 10px;
   border-radius: 2px;
@@ -117,29 +119,13 @@ td.aqi{
   transition: all 0.3s cubic-bezier(.25,.8,.25,1);
 }
 
-#over_map_2 { 
-  width: 30%;
-  position: absolute; 
-  top: 50%; 
-  right: 3%; 
-  z-index: 99; 
-  background-color: rgba(255,255,255,0.0);
-  color: black;
-
-  display: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-  font-size: 90%;
-  height: auto;
-}
-
 #over_map:hover, .aqi_table:hover {
   box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
 }
 #measures-table{
   cursor: pointer;
   border-collapse:separate;
-  border-spacing: 1px 4px;
+  border-spacing: 0px 4px;
 }
 #loading {
   position: absolute;

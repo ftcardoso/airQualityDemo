@@ -3,7 +3,7 @@ var map;
 var markers_measures = {};
 
 if (document.body.clientWidth <= 767) {
-  var isCollapsed = true;
+  var isCollapsed = false;
 } else {
   var isCollapsed = false;
 }
@@ -12,37 +12,16 @@ var measurand_parameters = ['Carbon Monoxide', 'Nitrogen Monoxide', 'Nitrogen Di
 var measurand_parameters_aux = ['CO', 'O3', 'NO2', 'SO2', 'PM10',  'RH', 'T'];
 var measurand_parameters_unit = ['PPM', 'PPB', 'PPB', 'PPB', 'µ', '%', 'ºC'];
 
-CO_RANGE = [0, 4.5, 9.5, 12.5, 15.5, 30.5, 40.5, 50.5]
-CO_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
-CO_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
+var grayIcon = L.icon({
+    iconUrl: 'assets/img/gray.png',
 
-NO2_RANGE = [0, 0.054, 0.101, 0.361, 0.65, 1.25, 1.65, 2.049]
-NO2_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
-NO2_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
-
-SO2_RANGE = [0, 36, 76, 186, 304]
-SO2_AQI = [0, 50, 100, 150, 200]
-SO2_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033']
-
-O3_RANGE = [0, 0.125, 0.165, 0.205, 0.405, 0.505, 0.605]
-O3_AQI = [0, 100, 150, 200, 300, 400, 500]
-O3_COLORS = ['#aaaaaa', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
-
-PM10_RANGE = [0, 55, 155, 255, 355, 425, 505, 605]
-PM10_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
-PM10_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
-
-
-POLLUTANTS = {	'CO': [CO_RANGE, CO_AQI, CO_COLORS],
-				'O3': [O3_RANGE, O3_AQI, O3_COLORS], 
-				'NO2': [NO2_RANGE, NO2_AQI, NO2_COLORS], 
-				'SO2':[SO2_RANGE, SO2_AQI, SO2_COLORS],
-				'PM10':[PM10_RANGE, PM10_AQI, PM10_COLORS]
-}
-
+    iconSize:     [25, 40], // size of the icon
+    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
 
 var greenIcon = L.icon({
-    iconUrl: 'https://raw.githubusercontent.com/ftcardoso/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    iconUrl: 'assets/img/green.png',
 
     iconSize:     [25, 40], // size of the icon
     iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
@@ -50,7 +29,7 @@ var greenIcon = L.icon({
 });
 
 var yellowIcon = L.icon({
-    iconUrl: 'https://raw.githubusercontent.com/ftcardoso/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+    iconUrl: 'assets/img/yellow.png',
 
     iconSize:     [25, 40], // size of the icon
     iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
@@ -58,7 +37,7 @@ var yellowIcon = L.icon({
 });
 
 var orangeIcon = L.icon({
-    iconUrl: 'https://raw.githubusercontent.com/ftcardoso/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+    iconUrl: 'assets/img/orange.png',
 
     iconSize:     [25, 40], // size of the icon
     iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
@@ -66,23 +45,62 @@ var orangeIcon = L.icon({
 });
 
 var redIcon = L.icon({
-    iconUrl: 'https://raw.githubusercontent.com/ftcardoso/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+    iconUrl: 'assets/img/red.png',
 
     iconSize:     [25, 40], // size of the icon
     iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
-var violetIcon = L.icon({
-    iconUrl: 'https://raw.githubusercontent.com/ftcardoso/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
+var purpleIcon = L.icon({
+    iconUrl: 'assets/img/purple.png',
 
     iconSize:     [25, 40], // size of the icon
     iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
-TEMP_MARKERS_RANGE = [0, 50, 100, 150, 200]
-TEMP_MARKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, violetIcon] 
+var brownIcon = L.icon({
+    iconUrl: 'assets/img/brown.png',
+
+    iconSize:     [25, 40], // size of the icon
+    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+});
+
+CO_RANGE = [0, 4.5, 9.5, 12.5, 15.5, 30.5, 40.5, 50.5]
+CO_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
+CO_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
+CO_MARKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+
+NO2_RANGE = [0, 0.054, 0.101, 0.361, 0.65, 1.25, 1.65, 2.049]
+NO2_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
+NO2_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
+NO2_MARKES_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+
+SO2_RANGE = [0, 36, 76, 186, 304]
+SO2_AQI = [0, 50, 100, 150, 200]
+SO2_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033']
+SO2_MARKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon]
+
+O3_RANGE = [0, 0.125, 0.165, 0.205, 0.405, 0.505, 0.605]
+O3_AQI = [0, 100, 150, 200, 300, 400, 500]
+O3_COLORS = ['#aaaaaa', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
+O3_MARKERS_COLORS = [grayIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+
+PM10_RANGE = [0, 55, 155, 255, 355, 425, 505, 605]
+PM10_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
+PM10_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
+PM10_MAKRKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+
+
+POLLUTANTS = {	'CO': [CO_RANGE, CO_AQI, CO_COLORS, CO_MARKERS_COLORS],
+				'O3': [O3_RANGE, O3_AQI, O3_COLORS, O3_MARKERS_COLORS], 
+				'NO2': [NO2_RANGE, NO2_AQI, NO2_COLORS, NO2_MARKES_COLORS], 
+				'SO2':[SO2_RANGE, SO2_AQI, SO2_COLORS, SO2_MARKERS_COLORS],
+				'PM10':[PM10_RANGE, PM10_AQI, PM10_COLORS, PM10_MAKRKERS_COLORS]
+}
+
 
 $(window).resize(function () {
 	sizeLayerControl();
@@ -122,14 +140,14 @@ var markerClusters = new L.MarkerClusterGroup({
 	animateAddingMarkers: true,
 	polygonOptions: {
 		weight: 3,
-		color: '#ff',
+		color: '#48B9C9',
 	}
 });
 
 map = L.map("map", {
 	zoom: 7,
 	center: [19.429861, -99.134698],
-	layers: [osmLayer, markerClusters, darkMatter],
+	layers: [osmLayer, markerClusters],
 	zoomControl: false,
 	attributionControl: false
 });
@@ -184,12 +202,14 @@ var locateControl = L.control.locate({
 		timeout: 10000
 	}
 }).addTo(map);
-/* Larger screens get expanded layer control and visible sidebar */
-if (document.body.clientWidth <= 767) {
-	var isCollapsed = true;
-} else {
-	var isCollapsed = false;
-}
+
+// /* Larger screens get expanded layer control and visible sidebar */
+// if (document.body.clientWidth <= 767) {
+// 	var isCollapsed = true;
+// } else {
+// 	var isCollapsed = false;
+// }
+
 $(document).on("ready", function () {
 	getInitialData();
 	map.addLayer(markerClusters);
@@ -265,19 +285,15 @@ function parseData(content) {
 				high_AQI_value = get_AQI;
 				high_AQI_name = measure_data[0];
 			}
-	
-			// for (var j = 1; j < POLLUTANTS[high_AQI_name][0].length; j++){
-			// 	if (high_AQI_value >= POLLUTANTS[high_AQI_name][0][j-1] && high_AQI_value < POLLUTANTS[high_AQI_name][0][j]){
-			// 		marker_color = POLLUTANTS[high_AQI_name][2][j];
-			// 	}
-			// }
 
-			for (var j = 1; j < TEMP_MARKERS_RANGE.length; j++){
-				if (high_AQI_value >= TEMP_MARKERS_RANGE[j-1] && high_AQI_value < TEMP_MARKERS_RANGE[j]){
-					marker_color = TEMP_MARKERS_COLORS[j];
-				}
+		}
+
+		for (var j = 1; j < POLLUTANTS[high_AQI_name][0].length; j++){
+			if (high_AQI_value >= POLLUTANTS[high_AQI_name][1][j-1] && high_AQI_value < POLLUTANTS[high_AQI_name][1][j]){
+				marker_color = POLLUTANTS[high_AQI_name][3][j-1];
 			}
 		}
+
 
 		popup += '<b>Higher AQI value: </b>' + high_AQI_name + ' - ' + high_AQI_value;
 
@@ -285,7 +301,6 @@ function parseData(content) {
 		measures_values.push(content[i].temperature);
 		markers_measures[marker_id] = measures_values;
 
-		console.log(high_AQI_value, marker_color);
 		var m = L.marker([content[i].location.coordinates[0], content[i].location.coordinates[1]], {icon: marker_color}).bindPopup(popup).on('click', onClickMarker);
 		m.id = content[i].id;
 
@@ -307,7 +322,15 @@ function onClickMarker(e) {
 	var measures_table = document.getElementById("measures-table");
 	measures_div.style.display = 'block';
 
+	// Delete previous parameter table
 	while(measures_table.rows[0]) measures_table.deleteRow(0);
+
+	// Delete parameter AQI table
+	var aqi_tables = document.getElementsByClassName('aqi_table');	
+
+	for (var j = 0; j < aqi_tables.length; j++) { 
+		aqi_tables[j].style.display = 'none';
+	}
 
 	for (i = 0; i < markers_measures[this.id].length; i++){
 		var row = measures_table.insertRow(0);
@@ -327,52 +350,21 @@ function onClickMarker(e) {
 		cell0.className = "table_cell_aqi0"
 		cell1.className = "table_cell_aqi1"
 
+		var pollutant = measurand_parameters_aux[i];
+		
+		// RH and T are not pollutants - don't have AQI index table (colors)
+		if (pollutant != 'RH' && pollutant != 'T'){
+			var pollutant_range = POLLUTANTS[pollutant][0];
+			var pollutant_colors = POLLUTANTS[pollutant][2];
 
-		// Change to get dynamically the color using the POLLUTANTS dictionary
-		if(measurand_parameters_aux[i] == 'PM10'){
-			for (var j = 1; j < PM10_RANGE.length; j++){
-				if (markers_measures[this.id][i] >= PM10_RANGE[j-1] && markers_measures[this.id][i] < PM10_RANGE[j]){
-					var pm10 = document.getElementById("PM10_TD");
-					pm10.style.backgroundColor = PM10_COLORS[j-1];
+			for (var j = 1; j < pollutant_range.length; j++){
+				if (markers_measures[this.id][i] >= pollutant_range[j-1] && markers_measures[this.id][i] < pollutant_range[j]){
+					var pollutant_table = document.getElementById(pollutant + '_TD');
+					pollutant_table.style.backgroundColor = pollutant_colors[j-1];
 				}
 			}
 		}
-
-		if(measurand_parameters_aux[i] == 'CO'){
-			for (var j = 1; j < CO_RANGE.length; j++){
-				if (markers_measures[this.id][i] >= CO_RANGE[j-1] && markers_measures[this.id][i] < CO_RANGE[j]){
-					var co = document.getElementById("CO_TD");
-					co.style.backgroundColor = CO_COLORS[j-1];
-				}
-			}
-		}
-
-		if(measurand_parameters_aux[i] == 'O3'){
-			for (var j = 1; j < O3_RANGE.length; j++){
-				if (markers_measures[this.id][i] >= O3_RANGE[j-1] && markers_measures[this.id][i] < O3_RANGE[j]){
-					var o3 = document.getElementById("O3_TD");
-					o3.style.backgroundColor = O3_COLORS[j-1];
-				}
-			}
-		}
-
-		if(measurand_parameters_aux[i] == 'SO2'){
-			for (var j = 1; j < SO2_RANGE.length; j++){
-				if (markers_measures[this.id][i] >= SO2_RANGE[j-1] && markers_measures[this.id][i] < SO2_RANGE[j]){
-					var so2 = document.getElementById("SO2_TD");
-					so2.style.backgroundColor = SO2_COLORS[j-1];
-				}
-			}
-		}
-
-		if(measurand_parameters_aux[i] == 'NO2'){
-			for (var j = 1; j < NO2_RANGE.length; j++){
-				if (markers_measures[this.id][i] >= NO2_RANGE[j-1] && markers_measures[this.id][i] < NO2_RANGE[j]){
-					var no2 = document.getElementById("NO2_TD");
-					no2.style.backgroundColor = NO2_COLORS[j-1];
-				}
-			}
-		}
+		
 		var pollutant_name = measurand_parameters_aux[i]
 
 		if (pollutant_name != 'T' && pollutant_name != 'RH'){
@@ -392,7 +384,7 @@ function onClickMarker(e) {
 
 	inner_cell_col1 = "Parameter";
 	inner_cell_col2 = "Value";
-	inner_cell_col3 = "Air Quality Index";
+	inner_cell_col3 = "AQI";
 
 	var cell_col1 = row.insertCell(0);
 	var cell_col2 = row.insertCell(1);
@@ -420,8 +412,11 @@ function onClickMarker(e) {
 			for (var j = 0; j < aqi_tables.length; j++) { 
 				aqi_tables[j].style.display = 'none';
 			}
-			//document.getElementById('over_map_2').style.display = 'block';
-			document.getElementById(ev.toElement.parentElement.id + '_AQI').style.display = 'block';
+			// RH and T are not pollutants, so they don't have AQI table colors
+			if (ev.toElement.parentElement.id != 'RH_TD' && ev.toElement.parentElement.id != 'T_TD'){ 
+				document.getElementById(ev.toElement.parentElement.id + '_AQI').style.display = 'block';
+			}
+
 		})
 	}
 	
@@ -429,6 +424,7 @@ function onClickMarker(e) {
 
 function getAQI(value, pollutant_range, aqi_range){
 	if (value == 0){
+		console.log(0)
 		return 0;
 	}
     var bp_index
