@@ -72,33 +72,42 @@ CO_RANGE = [0, 4.5, 9.5, 12.5, 15.5, 30.5, 40.5, 50.5]
 CO_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
 CO_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
 CO_MARKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+CO_AIR_LEVEL = ['Good', 'Moderate', 'Unhealthy for Sensitive Groups', 'Unhealthy', 'Very Unhealthy', 'Hazardous', 'Hazardous']
 
 NO2_RANGE = [0, 0.054, 0.101, 0.361, 0.65, 1.25, 1.65, 2.049]
 NO2_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
 NO2_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
-NO2_MARKES_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+NO2_MARKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+NO2_AIR_LEVEL = ['Good', 'Moderate', 'Unhealthy for Sensitive Groups', 'Unhealthy', 'Very Unhealthy', 'Hazardous', 'Hazardous']
 
 SO2_RANGE = [0, 36, 76, 186, 304]
 SO2_AQI = [0, 50, 100, 150, 200]
 SO2_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033']
 SO2_MARKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon]
+SO2_AIR_LEVEL = ['Good', 'Moderate', 'Unhealthy for Sensitive Groups', 'Unhealthy']
 
 O3_RANGE = [0, 0.125, 0.165, 0.205, 0.405, 0.505, 0.605]
 O3_AQI = [0, 100, 150, 200, 300, 400, 500]
 O3_COLORS = ['#aaaaaa', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
 O3_MARKERS_COLORS = [grayIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+O3_AIR_LEVEL = ['Moderate', 'Unhealthy for Sensitive Groups', 'Unhealthy', 'Very Unhealthy', 'Hazardous', 'Hazardous']
 
 PM10_RANGE = [0, 55, 155, 255, 355, 425, 505, 605]
 PM10_AQI = [0, 50, 100, 150, 200, 300, 400, 500]
 PM10_COLORS = ['#009966', '#ffde33', '#ff9933', '#cc0033', '#660099', '#7e0023', '#7e0023']
-PM10_MAKRKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+PM10_MARKERS_COLORS = [greenIcon, yellowIcon, orangeIcon, redIcon, purpleIcon, brownIcon, brownIcon]
+PM10_AIR_LEVEL = ['Good', 'Moderate', 'Unhealthy for Sensitive Groups', 'Unhealthy', 'Very Unhealthy', 'Hazardous', 'Hazardous']
+
+MEANING = ['Air quality is considered satisfactory, and air pollution poses little or no risk.', 'Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution.',
+'Members of sensitive groups may experience health effects. The general public is not likely to be affected.', 'Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects.',
+'Health alert: everyone may experience more serious health effects.', 'Health warnings of emergency conditions. The entire population is more likely to be affected.', 'Health warnings of emergency conditions. The entire population is more likely to be affected.']
 
 
-POLLUTANTS = {	'CO': [CO_RANGE, CO_AQI, CO_COLORS, CO_MARKERS_COLORS],
-				'O3': [O3_RANGE, O3_AQI, O3_COLORS, O3_MARKERS_COLORS], 
-				'NO2': [NO2_RANGE, NO2_AQI, NO2_COLORS, NO2_MARKES_COLORS], 
-				'SO2':[SO2_RANGE, SO2_AQI, SO2_COLORS, SO2_MARKERS_COLORS],
-				'PM10':[PM10_RANGE, PM10_AQI, PM10_COLORS, PM10_MAKRKERS_COLORS]
+POLLUTANTS = {	'CO': [CO_RANGE, CO_AQI, CO_COLORS, CO_MARKERS_COLORS, CO_AIR_LEVEL, MEANING],
+				'O3': [O3_RANGE, O3_AQI, O3_COLORS, O3_MARKERS_COLORS, O3_AIR_LEVEL, MEANING], 
+				'NO2': [NO2_RANGE, NO2_AQI, NO2_COLORS, NO2_MARKERS_COLORS, NO2_AIR_LEVEL, MEANING], 
+				'SO2':[SO2_RANGE, SO2_AQI, SO2_COLORS, SO2_MARKERS_COLORS, SO2_AIR_LEVEL, MEANING],
+				'PM10':[PM10_RANGE, PM10_AQI, PM10_COLORS, PM10_MARKERS_COLORS, PM10_AIR_LEVEL, MEANING]
 }
 
 
@@ -217,7 +226,9 @@ $(document).on("ready", function () {
 
 map.on('click', function (e) {
 	var measures_div = document.getElementById('over_map');
+	var air_concerns = document.getElementById('health');
 	measures_div.style.display = 'none';
+	air_concerns.style.display = 'none';
 
 	var aqi_tables = document.getElementsByClassName('aqi_table');	
 
@@ -247,8 +258,8 @@ function getInitialData() {
 }
 
 function getSubscription(){
-	var client = mqtt.connect("http://163.172.148.102:8000/resources/airquality")
-	client.subscribe('airquality')
+	var client = mqtt.connect("http://163.172.148.102:8000/resources/airquality");
+	client.subscribe('airquality');
 	client.on('message', function (topic, message) {
 
 	var content = JSON.parse(message).data;
@@ -256,7 +267,7 @@ function getSubscription(){
 	parseData(content);
 
 	});
-}
+};
 
 function parseData(content) {
 	for (var i = 0; i < content.length; ++i) {
@@ -266,7 +277,6 @@ function parseData(content) {
 			var marker_color = '';
 
 		var popup = '<b>' + marker_id + '</b></br>' +
-			'<br/><b>Type:</b> ' + content[i].type +
 			'<br/><b>Last Update:</b> ' + content[i].dateObserved +
 			'<br/><b>Address:</b> ' + content[i].address.streetAddress + ', ' + content[i].address.addressLocality + ', ' + content[i].address.addressCountry +
 			'<br/>'
@@ -291,11 +301,12 @@ function parseData(content) {
 		for (var j = 1; j < POLLUTANTS[high_AQI_name][0].length; j++){
 			if (high_AQI_value >= POLLUTANTS[high_AQI_name][1][j-1] && high_AQI_value < POLLUTANTS[high_AQI_name][1][j]){
 				marker_color = POLLUTANTS[high_AQI_name][3][j-1];
+				air_quality = POLLUTANTS[high_AQI_name][4][j-1]
 			}
 		}
 
 
-		popup += '<b>Higher AQI value: </b>' + high_AQI_name + ' - ' + high_AQI_value;
+		popup += '<b>Air Quality Index: </b>' + air_quality;
 
 		measures_values.push(content[i].relativeHumidity);
 		measures_values.push(content[i].temperature);
@@ -319,7 +330,9 @@ function parseData(content) {
 
 function onClickMarker(e) {
 	var measures_div = document.getElementById('over_map');
-	var measures_table = document.getElementById("measures-table");
+	var measures_table = document.getElementById('measures-table');
+	var air_level = document.getElementById('air_concerns');
+	var air_health = document.getElementById('health');
 	measures_div.style.display = 'block';
 
 	// Delete previous parameter table
@@ -356,11 +369,15 @@ function onClickMarker(e) {
 		if (pollutant != 'RH' && pollutant != 'T'){
 			var pollutant_range = POLLUTANTS[pollutant][0];
 			var pollutant_colors = POLLUTANTS[pollutant][2];
+			var pollutant_air_level = POLLUTANTS[pollutant][5];
 
 			for (var j = 1; j < pollutant_range.length; j++){
 				if (markers_measures[this.id][i] >= pollutant_range[j-1] && markers_measures[this.id][i] < pollutant_range[j]){
 					var pollutant_table = document.getElementById(pollutant + '_TD');
 					pollutant_table.style.backgroundColor = pollutant_colors[j-1];
+					air_health.style.backgroundColor = pollutant_colors[j-1];
+					air_level.innerHTML = pollutant_air_level[j-1];
+					air_health.style.display = 'block';
 				}
 			}
 		}
