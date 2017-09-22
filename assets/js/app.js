@@ -277,8 +277,14 @@ function parseData(content) {
 			var marker_id = content[i].id;
 
 			var popup = '<b>Last Update: </b>' + content[i].dateTime.split('T')[0] + ' - '  + content[i].dateTime.split('T')[1].split('Z')[0] + '</br> <b>Event: </b>' + content[i].eventObserved + '</br>' + '<b>Description: </b>' + content[i].description + '</br><b>Location: </b>' + content[i].locationDescription ;
+			
+			if (content[i].eventObserved == 'Derrumbe'){
+				markerColor = redIcon;
+			}else{
+				markerColor = yellowIcon;
+			}
 
-			var m = L.marker([content[i].location.coordinates[1], content[i].location.coordinates[0]], {icon: yellowIcon}).bindPopup(popup)
+			var m = L.marker([content[i].location.coordinates[1], content[i].location.coordinates[0]], {icon: markerColor}).bindPopup(popup)
 			// .on('click', onClickMarker);
 			m.id = content[i].id;
 
