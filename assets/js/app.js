@@ -239,7 +239,7 @@ map.on('click', function (e) {
 
 
 function getInitialData() {
-	var url = "http://waste.urbiotica.citibrain.com:8002/"
+	var url = "http://207.249.127.132:1026/v2/entities?options=keyValues&type=Alert&limit=1000&orderBy=!dateTime";
 	//var url = "http://fiware-porto.citibrain.com/v2/entities/?options=keyValues&entity=AirQualityObserved&limit=1000&key="
 	$.ajax({
 		url: url,
@@ -258,7 +258,7 @@ function getInitialData() {
 }
 
 function getSubscription(){
-	var client = mqtt.connect("http://163.172.148.102:8000/resources/airquality");
+	var client = mqtt.connect("http://163.172.148.102:8000/resources/sosalerts");
 	client.subscribe('airquality');
 	client.on('message', function (topic, message) {
 
@@ -271,201 +271,169 @@ function getSubscription(){
 
 function parseData(content) {
 	for (var i = 0; i < content.length; ++i) {
-		var marker_id = content[i].id;
-			var high_AQI_value = 0;
-			var high_AQI_name = '';
-			var marker_color = '';
 
-		var popup = '<b>' + marker_id + '</b></br>' +
-			'<br/><b>Last Update:</b> ' + content[i].dateObserved +
-			'<br/><b>Address:</b> ' + content[i].address.streetAddress + ', ' + content[i].address.addressLocality + ', ' + content[i].address.addressCountry +
-			'<br/>'
+		if (content[i].alertType == 'SOSAlerts') {
 
-		measures = content[i].measurand;
-		var measures_values = []
+			var marker_id = content[i].id;
 
-		for (var measure = 0; measure < measures.length; measure++) {
+			var popup = '<b>Last Update: </b>' + content[i].dateTime.split('T')[0] + ' - '  + content[i].dateTime.split('T')[1].split('Z')[0] + '</br> <b>Event: </b>' + content[i].eventObserved + '</br>' + '<b>Description: </b>' + content[i].description + '</br><b>Location: </b>' + content[i].locationDescription ;
 
-			var measure_data = measures[measure].split(', ')
-			measures_values.push(measure_data[1]);
-
-			var get_AQI = getAQI(measure_data[1], POLLUTANTS[measure_data[0]][0], POLLUTANTS[measure_data[0]][1]);
-
-			if (get_AQI >= high_AQI_value){
-				high_AQI_value = get_AQI;
-				high_AQI_name = measure_data[0];
-			}
-
-		}
-
-		for (var j = 1; j < POLLUTANTS[high_AQI_name][0].length; j++){
-			if (high_AQI_value >= POLLUTANTS[high_AQI_name][1][j-1] && high_AQI_value < POLLUTANTS[high_AQI_name][1][j]){
-				marker_color = POLLUTANTS[high_AQI_name][3][j-1];
-				air_quality = POLLUTANTS[high_AQI_name][4][j-1]
-			}
-		}
+			var m = L.marker([content[i].location.coordinates[1], content[i].location.coordinates[0]], {icon: yellowIcon}).bindPopup(popup)
+			// .on('click', onClickMarker);
+			m.id = content[i].id;
 
 
-		popup += '<b>Air Quality Index: </b>' + air_quality;
+			var layers = markerClusters.getLayers();
 
-		measures_values.push(content[i].relativeHumidity);
-		measures_values.push(content[i].temperature);
-		markers_measures[marker_id] = measures_values;
-
-		var m = L.marker([content[i].location.coordinates[0], content[i].location.coordinates[1]], {icon: marker_color}).bindPopup(popup).on('click', onClickMarker);
-		m.id = content[i].id;
-
-
-		var layers = markerClusters.getLayers();
-
-		for (var j = 0; j < layers.length; j++) {
-			if (layers[j].id == marker_id) {
-				var layer_id = layers[j]._leaflet_id
-				markerClusters.removeLayer(markerClusters.getLayer(layer_id));
-			}
-		}
-		markerClusters.addLayer(m);
-	}
-}
-
-function onClickMarker(e) {
-	var measures_div = document.getElementById('over_map');
-	var measures_table = document.getElementById('measures-table');
-	var air_level = document.getElementById('air_concerns');
-	var air_health = document.getElementById('health');
-	measures_div.style.display = 'block';
-
-	// Delete previous parameter table
-	while(measures_table.rows[0]) measures_table.deleteRow(0);
-
-	// Delete parameter AQI table
-	var aqi_tables = document.getElementsByClassName('aqi_table');	
-
-	for (var j = 0; j < aqi_tables.length; j++) { 
-		aqi_tables[j].style.display = 'none';
-	}
-
-	for (i = 0; i < markers_measures[this.id].length; i++){
-		var row = measures_table.insertRow(0);
-		row.id = measurand_parameters_aux[i] + '_TD';
-		row.className = "table_row_aqi"
-
-		inner_cell0 = measurand_parameters[i] + ' (' + measurand_parameters_aux[i] + ')' + ': &nbsp;&nbsp;&nbsp;&nbsp;'
-		inner_cell1 = markers_measures[this.id][i] + ' ' + measurand_parameters_unit[i];
-
-		var cell0 = row.insertCell(0);
-		var cell1 = row.insertCell(1);
-
-
-		cell0.innerHTML = inner_cell0;
-		cell1.innerHTML = inner_cell1;
-
-		cell0.className = "table_cell_aqi0"
-		cell1.className = "table_cell_aqi1"
-
-		var pollutant = measurand_parameters_aux[i];
-		
-		// RH and T are not pollutants - don't have AQI index table (colors)
-		if (pollutant != 'RH' && pollutant != 'T'){
-			var pollutant_range = POLLUTANTS[pollutant][0];
-			var pollutant_colors = POLLUTANTS[pollutant][2];
-			var pollutant_air_level = POLLUTANTS[pollutant][5];
-
-			for (var j = 1; j < pollutant_range.length; j++){
-				if (markers_measures[this.id][i] >= pollutant_range[j-1] && markers_measures[this.id][i] < pollutant_range[j]){
-					var pollutant_table = document.getElementById(pollutant + '_TD');
-					pollutant_table.style.backgroundColor = pollutant_colors[j-1];
-					air_health.style.backgroundColor = pollutant_colors[j-1];
-					air_level.innerHTML = pollutant_air_level[j-1];
-					air_health.style.display = 'block';
+			for (var j = 0; j < layers.length; j++) {
+				if (layers[j].id == marker_id) {
+					var layer_id = layers[j]._leaflet_id
+					markerClusters.removeLayer(markerClusters.getLayer(layer_id));
 				}
 			}
+			markerClusters.addLayer(m);
 		}
+	}
+}
+
+// function onClickMarker(e) {
+// 	var measures_div = document.getElementById('over_map');
+// 	var measures_table = document.getElementById('measures-table');
+// 	var air_level = document.getElementById('air_concerns');
+// 	var air_health = document.getElementById('health');
+// 	measures_div.style.display = 'block';
+
+// 	// Delete previous parameter table
+// 	while(measures_table.rows[0]) measures_table.deleteRow(0);
+
+// 	// Delete parameter AQI table
+// 	var aqi_tables = document.getElementsByClassName('aqi_table');	
+
+// 	for (var j = 0; j < aqi_tables.length; j++) { 
+// 		aqi_tables[j].style.display = 'none';
+// 	}
+
+// 	for (i = 0; i < markers_measures[this.id].length; i++){
+// 		var row = measures_table.insertRow(0);
+// 		row.id = measurand_parameters_aux[i] + '_TD';
+// 		row.className = "table_row_aqi"
+
+// 		inner_cell0 = measurand_parameters[i] + ' (' + measurand_parameters_aux[i] + ')' + ': &nbsp;&nbsp;&nbsp;&nbsp;'
+// 		inner_cell1 = markers_measures[this.id][i] + ' ' + measurand_parameters_unit[i];
+
+// 		var cell0 = row.insertCell(0);
+// 		var cell1 = row.insertCell(1);
+
+
+// 		cell0.innerHTML = inner_cell0;
+// 		cell1.innerHTML = inner_cell1;
+
+// 		cell0.className = "table_cell_aqi0"
+// 		cell1.className = "table_cell_aqi1"
+
+// 		var pollutant = measurand_parameters_aux[i];
 		
-		var pollutant_name = measurand_parameters_aux[i]
+// 		// RH and T are not pollutants - don't have AQI index table (colors)
+// 		if (pollutant != 'RH' && pollutant != 'T'){
+// 			var pollutant_range = POLLUTANTS[pollutant][0];
+// 			var pollutant_colors = POLLUTANTS[pollutant][2];
+// 			var pollutant_air_level = POLLUTANTS[pollutant][5];
 
-		if (pollutant_name != 'T' && pollutant_name != 'RH'){
-			inner_cell2 = getAQI(markers_measures[this.id][i], POLLUTANTS[pollutant_name][0], POLLUTANTS[pollutant_name][1]);
-		}else{
-			inner_cell2 = '-'
-		}
+// 			for (var j = 1; j < pollutant_range.length; j++){
+// 				if (markers_measures[this.id][i] >= pollutant_range[j-1] && markers_measures[this.id][i] < pollutant_range[j]){
+// 					var pollutant_table = document.getElementById(pollutant + '_TD');
+// 					pollutant_table.style.backgroundColor = pollutant_colors[j-1];
+// 					air_health.style.backgroundColor = pollutant_colors[j-1];
+// 					air_level.innerHTML = pollutant_air_level[j-1];
+// 					air_health.style.display = 'block';
+// 				}
+// 			}
+// 		}
+		
+// 		var pollutant_name = measurand_parameters_aux[i]
 
-		var cell2 = row.insertCell(2);
-		cell2.innerHTML = inner_cell2;
-		cell2.className = "table_cell_aqi2"
-	}
+// 		if (pollutant_name != 'T' && pollutant_name != 'RH'){
+// 			inner_cell2 = getAQI(markers_measures[this.id][i], POLLUTANTS[pollutant_name][0], POLLUTANTS[pollutant_name][1]);
+// 		}else{
+// 			inner_cell2 = '-'
+// 		}
 
-	// Append table first row 
-	var row = measures_table.insertRow(0);
-	row.className = "table_row_aqi"
+// 		var cell2 = row.insertCell(2);
+// 		cell2.innerHTML = inner_cell2;
+// 		cell2.className = "table_cell_aqi2"
+// 	}
 
-	inner_cell_col1 = "Parameter";
-	inner_cell_col2 = "Value";
-	inner_cell_col3 = "AQI";
+// 	// Append table first row 
+// 	var row = measures_table.insertRow(0);
+// 	row.className = "table_row_aqi"
 
-	var cell_col1 = row.insertCell(0);
-	var cell_col2 = row.insertCell(1);
-	var cell_col3 = row.insertCell(2);
+// 	inner_cell_col1 = "Parameter";
+// 	inner_cell_col2 = "Value";
+// 	inner_cell_col3 = "AQI";
 
-	cell_col1.innerHTML = inner_cell_col1;
-	cell_col2.innerHTML = inner_cell_col2;
-	cell_col3.innerHTML = inner_cell_col3;
+// 	var cell_col1 = row.insertCell(0);
+// 	var cell_col2 = row.insertCell(1);
+// 	var cell_col3 = row.insertCell(2);
 
-	cell_col1.className = "table_cell_name1";
-	cell_col2.className = "table_cell_name2";
-	cell_col3.className = "table_cell_name2";
+// 	cell_col1.innerHTML = inner_cell_col1;
+// 	cell_col2.innerHTML = inner_cell_col2;
+// 	cell_col3.innerHTML = inner_cell_col3;
+
+// 	cell_col1.className = "table_cell_name1";
+// 	cell_col2.className = "table_cell_name2";
+// 	cell_col3.className = "table_cell_name2";
 
 
-	// Add event listenner to table to show AQI info
-	var measures_table = document.getElementById('measures-table');
-	var measures_table_row = measures_table.getElementsByTagName("tr");
+// 	// Add event listenner to table to show AQI info
+// 	var measures_table = document.getElementById('measures-table');
+// 	var measures_table_row = measures_table.getElementsByTagName("tr");
 
-	for (var i = 0; i < measures_table_row.length; i++) { 
-		row = measures_table_row[i];
-		row.addEventListener('click', function(ev){
+// 	for (var i = 0; i < measures_table_row.length; i++) { 
+// 		row = measures_table_row[i];
+// 		row.addEventListener('click', function(ev){
 
-			var aqi_tables = document.getElementsByClassName('aqi_table');	
+// 			var aqi_tables = document.getElementsByClassName('aqi_table');	
 
-			for (var j = 0; j < aqi_tables.length; j++) { 
-				aqi_tables[j].style.display = 'none';
-			}
-			// RH and T are not pollutants, so they don't have AQI table colors
-			if (ev.toElement.parentElement.id != 'RH_TD' && ev.toElement.parentElement.id != 'T_TD'){ 
-				document.getElementById(ev.toElement.parentElement.id + '_AQI').style.display = 'block';
-			}
+// 			for (var j = 0; j < aqi_tables.length; j++) { 
+// 				aqi_tables[j].style.display = 'none';
+// 			}
+// 			// RH and T are not pollutants, so they don't have AQI table colors
+// 			if (ev.toElement.parentElement.id != 'RH_TD' && ev.toElement.parentElement.id != 'T_TD'){ 
+// 				document.getElementById(ev.toElement.parentElement.id + '_AQI').style.display = 'block';
+// 			}
 
-		})
-	}
+// 		})
+// 	}
 	
-}
+// }
 
-function getAQI(value, pollutant_range, aqi_range){
-	if (value == 0){
-		console.log(0)
-		return 0;
-	}
-    var bp_index
+// function getAQI(value, pollutant_range, aqi_range){
+// 	if (value == 0){
+// 		console.log(0)
+// 		return 0;
+// 	}
+//     var bp_index
 
-        for (var i = 1; i < pollutant_range.length; i ++){
-                if (pollutant_range[i - 1] < value && value <= pollutant_range[i]){
-                        bp_index = i;
-                        break;
-                }
-        }
+//         for (var i = 1; i < pollutant_range.length; i ++){
+//                 if (pollutant_range[i - 1] < value && value <= pollutant_range[i]){
+//                         bp_index = i;
+//                         break;
+//                 }
+//         }
 
-        if (value > pollutant_range[pollutant_range.length-1]){
-                bp_index = pollutant_range.length
-        }
+//         if (value > pollutant_range[pollutant_range.length-1]){
+//                 bp_index = pollutant_range.length
+//         }
 
-    var i_hi = aqi_range[bp_index]
-    var i_low = aqi_range[bp_index-1]
+//     var i_hi = aqi_range[bp_index]
+//     var i_low = aqi_range[bp_index-1]
 
-    var bp_hi = pollutant_range[bp_index]
-    var bp_low = pollutant_range[bp_index-1]
+//     var bp_hi = pollutant_range[bp_index]
+//     var bp_low = pollutant_range[bp_index-1]
 
-    index = ((i_hi - i_low) / (bp_hi - bp_low)) * (value - bp_low) + i_low
-    return Math.round(index);
-}
+//     index = ((i_hi - i_low) / (bp_hi - bp_low)) * (value - bp_low) + i_low
+//     return Math.round(index);
+// }
 // Leaflet patch to make layer control scrollable on touch browsers
 // var container = $(".leaflet-control-layers")[0];
 // if (!L.Browser.touch) {
