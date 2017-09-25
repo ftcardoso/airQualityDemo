@@ -15,56 +15,56 @@ var measurand_parameters_unit = ['PPM', 'PPB', 'PPB', 'PPB', 'µ', '%', 'ºC'];
 var grayIcon = L.icon({
     iconUrl: 'assets/img/gray.png',
 
-    iconSize:     [25, 40], // size of the icon
-    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
+    iconSize:     [24, 36], // size of the icon
+    iconAnchor:   [12, 36], // point of the icon which will correspond to marker's location
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
 var greenIcon = L.icon({
     iconUrl: 'assets/img/green.png',
 
-    iconSize:     [25, 40], // size of the icon
-    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
+    iconSize:     [24, 36], // size of the icon
+    iconAnchor:   [12, 36], // point of the icon which will correspond to marker's location
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
 var yellowIcon = L.icon({
-    iconUrl: 'assets/img/yellow.png',
-
-    iconSize:     [25, 40], // size of the icon
-    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
+	iconUrl: 'assets/img/yellow.png',
+	
+    iconSize:     [24, 36], // size of the icon
+    iconAnchor:   [12, 36], // point of the icon which will correspond to marker's location
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
 var orangeIcon = L.icon({
     iconUrl: 'assets/img/orange.png',
 
-    iconSize:     [25, 40], // size of the icon
-    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
+    iconSize:     [24, 36], // size of the icon
+    iconAnchor:   [12, 36], // point of the icon which will correspond to marker's location
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
 var redIcon = L.icon({
     iconUrl: 'assets/img/red.png',
 
-    iconSize:     [25, 40], // size of the icon
-    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
-    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+    iconSize:     [24, 36], // size of the icon
+    iconAnchor:   [12, 36], // point of the icon which will correspond to marker's location
+    popupAnchor:  [0, -40] // point from which the popup should open relative to the iconAnchor
 });
 
 var purpleIcon = L.icon({
     iconUrl: 'assets/img/purple.png',
 
-    iconSize:     [25, 40], // size of the icon
-    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
+    iconSize:     [24, 36], // size of the icon
+    iconAnchor:   [12, 36], // point of the icon which will correspond to marker's location
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
 var brownIcon = L.icon({
     iconUrl: 'assets/img/brown.png',
 
-    iconSize:     [25, 40], // size of the icon
-    iconAnchor:   [15, 82], // point of the icon which will correspond to marker's location
+    iconSize:     [24, 36], // size of the icon
+    iconAnchor:   [12, 36], // point of the icon which will correspond to marker's location
     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
 });
 
@@ -280,9 +280,14 @@ function parseData(content) {
 			
 			if (content[i].eventObserved == 'Derrumbe'){
 				markerColor = redIcon;
-			}else{
+			}else if(content[i].eventObserved == 'Albergues'){
 				markerColor = yellowIcon;
+			}else if(content[i].eventObserved == 'Centro de acopio'){
+				markerColor = greenIcon;
+			}else if(content[i].eventObserved == 'A punto de colapso'){
+				markerColor = orangeIcon;
 			}
+
 
 			var m = L.marker([content[i].location.coordinates[1], content[i].location.coordinates[0]], {icon: markerColor}).bindPopup(popup)
 			// .on('click', onClickMarker);
